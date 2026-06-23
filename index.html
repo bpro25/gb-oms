@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GB-OMS</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#F5F5F5;--bg2:#FFFFFF;--bg3:#F0F0F0;
+  --border:#E0E0E0;--border2:#CCCCCC;
+  --text:#1A1A1A;--text2:#555;--text3:#999;
+  --blue:#185FA5;--blue2:#E6F1FB;
+  --green:#3B6D11;--green2:#EAF3DE;
+  --orange:#854F0B;--orange2:#FAEEDA;
+  --red:#A32D2D;--red2:#FCEBEB;
+  --purple:#3C3489;--purple2:#EEEDFE;
+  --radius:8px;--radius2:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:13px;}
+
+/* ── LOGIN ── */
+.login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg);}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:32px;width:340px;box-shadow:0 4px 24px rgba(0,0,0,.06);}
+.fg{margin-bottom:14px;}
+.fl{font-size:11px;color:var(--text2);margin-bottom:5px;display:block;}
+.fi{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg2);color:var(--text);outline:none;}
+.fi:focus{border-color:var(--blue);}
+.err{color:var(--red);font-size:11px;margin-top:6px;display:none;}
+
+/* ── APP ── */
+.app{display:none;min-height:100vh;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:46px;background:var(--bg2);border-bottom:1px solid var(--border);position:fixed;top:0;left:0;right:0;z-index:50;}
+.logo{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;}
+.logo-icon{width:28px;height:28px;background:var(--orange2);border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.topbar-r{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--text2);}
+.av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;}
+.sidebar{position:fixed;left:0;top:46px;width:190px;height:calc(100vh - 46px);background:var(--bg2);border-right:1px solid var(--border);padding:12px 0;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
+.ni{display:flex;align-items:center;gap:9px;padding:7px 14px;font-size:13px;color:var(--text2);cursor:pointer;border-radius:0;}
+.ni:hover{background:var(--bg3);color:var(--text);}
+.ni.active{color:var(--blue);background:var(--blue2);font-weight:500;}
+.ns{font-size:10px;color:var(--text3);padding:10px 14px 3px;text-transform:uppercase;letter-spacing:.05em;}
+.main{margin-left:190px;padding:16px;padding-top:62px;padding-bottom:80px;}
+.view{display:none;}.view.active{display:block;}
+.pt{font-size:17px;font-weight:500;margin-bottom:14px;}
+
+/* ── CARDS ── */
+.mrow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.mc{background:var(--bg3);border-radius:var(--radius);padding:12px 14px;}
+.ml{font-size:11px;color:var(--text2);margin-bottom:5px;}
+.mv{font-size:21px;font-weight:500;}
+.ms{font-size:10px;color:var(--text3);margin-top:2px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:14px;margin-bottom:14px;}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.ct{font-size:13px;font-weight:500;}
+
+/* ── HORNOS ── */
+.fgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.ftile{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px;cursor:pointer;transition:border-color .15s;}
+.ftile:hover{border-color:var(--border2);}
+.ftile.sel{border:2px solid var(--blue);background:var(--blue2);}
+.fn{font-size:12px;font-weight:500;margin-bottom:2px;}
+.fid{font-size:10px;color:var(--text3);margin-bottom:5px;}
+.ftemp{font-size:19px;font-weight:500;}
+.ftemp span{font-size:11px;color:var(--text2);}
+.sd{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;}
+.son{background:#639922;}.sof{background:#E24B4A;}.sw{background:#EF9F27;}
+.sl{font-size:11px;}.sl.on{color:var(--green);}.sl.of{color:var(--red);}.sl.wa{color:var(--orange);}
+
+/* ── TABLE ── */
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{text-align:left;font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;padding:5px 8px;border-bottom:1px solid var(--border);}
+td{padding:7px 8px;border-bottom:1px solid var(--border);color:var(--text);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--bg3);}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:500;}
+.bok{background:var(--green2);color:var(--green);}
+.bwn{background:var(--orange2);color:var(--orange);}
+.ber{background:var(--red2);color:var(--red);}
+.badm{background:var(--purple2);color:var(--purple);}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;font-size:12px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg2);color:var(--text);cursor:pointer;}
+.btn:hover{background:var(--bg3);}
+.btnp{background:var(--blue);color:#fff;border-color:var(--blue);}
+.btnp:hover{background:#0C447C;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* ── IROW ── */
+.irow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.il{font-size:10px;color:var(--text2);margin-bottom:3px;}
+.iv{font-size:13px;font-weight:500;}
+.admbanner{background:var(--purple2);border:1px solid #AFA9EC;border-radius:var(--radius);padding:7px 12px;margin-bottom:12px;font-size:12px;color:var(--purple);display:flex;align-items:center;gap:7px;}
+
+/* ── CHAT ── */
+.float-btn{position:fixed;bottom:20px;right:20px;width:44px;height:44px;border-radius:50%;background:var(--blue);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.float-btn:hover{background:#0C447C;}
+.cpanel{position:fixed;bottom:74px;right:20px;width:310px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);z-index:100;display:none;flex-direction:column;box-shadow:0 4px 16px rgba(0,0,0,.1);}
+.cpanel.open{display:flex;}
+.cp-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border);}
+.cp-msgs{height:240px;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
+.cm{display:flex;gap:7px;align-items:flex-start;}
+.cm.u{flex-direction:row-reverse;}
+.cav{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;}
+.cai{background:var(--orange2);color:var(--orange);}
+.cui{background:var(--green2);color:var(--green);}
+.cb{max-width:86%;padding:7px 10px;border-radius:var(--radius2);font-size:12px;line-height:1.5;}
+.cba{background:var(--bg3);color:var(--text);}
+.cbu{background:var(--blue);color:#fff;}
+.cp-input{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border);}
+.cp-input input{flex:1;font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg2);color:var(--text);outline:none;}
+.pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.pill{padding:3px 10px;border-radius:99px;font-size:11px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;}
+.pill:hover{background:var(--blue2);color:var(--blue);border-color:#85B7EB;}
+.cfull-wrap{display:flex;flex-direction:column;height:300px;}
+.cfull-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
+.cinrow{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.cinrow input{flex:1;font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg2);color:var(--text);outline:none;}
+.cfgtinput{width:70px;font-size:12px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:var(--bg2);color:var(--text);}
+.codebox{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-family:monospace;font-size:11px;white-space:pre;overflow-x:auto;max-height:260px;overflow-y:auto;line-height:1.6;}
+
+/* ── SPINNER ── */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-row{display:flex;align-items:center;justify-content:center;padding:24px;color:var(--text3);gap:8px;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ LOGIN ═══════════════════════════════ -->
+<div class="login-screen" id="LS">
+  <div class="login-card">
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:22px;">
+      <div style="width:34px;height:34px;background:var(--orange2);border-radius:7px;display:flex;align-items:center;justify-content:center;">
+        <i class="ti ti-flame" style="font-size:18px;color:var(--orange);"></i>
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:500;">GB-OMS</div>
+        <div style="font-size:10px;color:var(--text2);">Oven Monitoring System</div>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">Correo</label>
+      <input class="fi" type="email" id="loginEmail" placeholder="correo@grupobeta.com" autocomplete="email">
+    </div>
+    <div class="fg">
+      <label class="fl">Contraseña</label>
+      <input class="fi" type="password" id="loginPass" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="err" id="loginErr"></div>
+    <button class="btn btnp" id="loginBtn" style="width:100%;justify-content:center;padding:9px;margin-top:4px;" onclick="doLogin()">
+      Ingresar <i class="ti ti-arrow-right"></i>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ APP ═══════════════════════════════ -->
+<div class="app" id="APP">
+
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon"><i class="ti ti-flame" style="font-size:15px;color:var(--orange);"></i></div>
+      GB-OMS
+    </div>
+    <div class="topbar-r">
+      <span id="statusGlobal"><span class="sd son"></span>Cargando...</span>
+      <i class="ti ti-bell" style="font-size:15px;cursor:pointer;"></i>
+      <span style="display:flex;align-items:center;gap:5px;">
+        <div id="uAv" class="av" style="background:var(--green2);color:var(--green);">--</div>
+        <span id="uLbl">--</span>
+        <span id="admTop" style="display:none;background:var(--purple2);color:var(--purple);font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500;">Admin</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <span class="ns">Monitor</span>
+    <div class="ni active" id="n-dash" onclick="sv('dash')"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+    <div class="ni" id="n-hornos" onclick="sv('hornos')"><i class="ti ti-flame"></i> Hornos</div>
+    <span class="ns">Análisis</span>
+    <div class="ni" id="n-ai" onclick="sv('ai')"><i class="ti ti-message-dots"></i> Asistente</div>
+    <span class="ns">Sistema</span>
+    <div class="ni" id="n-cfg2" style="display:none;" onclick="sv('cfg2')"><i class="ti ti-adjustments"></i> Configuración</div>
+    <div class="ni" id="n-config" style="display:none;" onclick="sv('config')"><i class="ti ti-cpu"></i> Nuevo medidor</div>
+    <div class="ni" id="n-users" style="display:none;" onclick="sv('users')"><i class="ti ti-users"></i> Log de usuarios</div>
+    <div class="ni" onclick="doLogout()" style="margin-top:6px;"><i class="ti ti-logout"></i> Cerrar sesión</div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div id="v-dash" class="view active">
+      <div class="pt">Dashboard</div>
+      <div class="mrow" id="metricRow">
+        <div class="mc"><div class="ml">Temp. promedio</div><div class="mv" id="m-avg">--°C</div><div class="ms">todos los hornos</div></div>
+        <div class="mc"><div class="ml">Hornos operativos</div><div class="mv" id="m-online">--</div><div class="ms" id="m-offname"></div></div>
+        <div class="mc"><div class="ml">Anomalías hoy</div><div class="mv" id="m-anom" style="color:var(--red);">--</div><div class="ms">sobre umbral</div></div>
+        <div class="mc"><div class="ml">Última actualización</div><div class="mv" id="m-sync" style="font-size:15px;">--</div><div class="ms" id="m-syncago"></div></div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">Estado de hornos</div><button class="btn" onclick="sv('hornos')"><i class="ti ti-list"></i> Ver detalle</button></div>
+        <div class="fgrid" id="dashGrid">
+          <div class="loading-row" style="grid-column:1/-1;"><div class="spinner" style="border-top-color:var(--blue);border-color:var(--border);"></div> Cargando...</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">Tendencia — últimas 24h</div></div>
+        <div style="position:relative;width:100%;height:175px;"><canvas id="oc"></canvas></div>
+        <div id="chartLegend" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;font-size:11px;color:var(--text2);"></div>
+      </div>
+    </div>
+
+    <!-- HORNOS -->
+    <div id="v-hornos" class="view">
+      <div class="pt">Hornos</div>
+      <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;" id="hornoTabs"></div>
+      <div class="card" id="hornoDetail">
+        <div class="loading-row"><div class="spinner" style="border-top-color:var(--blue);border-color:var(--border);"></div> Selecciona un horno</div>
+      </div>
+    </div>
+
+    <!-- ASISTENTE -->
+    <div id="v-ai" class="view">
+      <div class="pt">Asistente de datos</div>
+      <div class="card">
+        <div class="ch">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:26px;height:26px;border-radius:50%;background:var(--orange2);display:flex;align-items:center;justify-content:center;"><i class="ti ti-message-dots" style="font-size:13px;color:var(--orange);"></i></div>
+            <div><div class="ct">Asistente GB-OMS</div><div style="font-size:10px;color:var(--text2);">Pregunta como quieras</div></div>
+          </div>
+        </div>
+        <div class="pills">
+          <div class="pill" onclick="rq('horno 2 info',true)">horno 2 info</div>
+          <div class="pill" onclick="rq('anomalias semana pasada',true)">anomalias semana pasada</div>
+          <div class="pill" onclick="rq('q paso ayer',true)">q paso ayer</div>
+          <div class="pill" onclick="rq('cual esta mas caliente',true)">cual esta mas caliente</div>
+          <div class="pill" onclick="rq('esta todo bien',true)">esta todo bien</div>
+          <div class="pill" onclick="rq('offline?',true)">offline?</div>
+        </div>
+        <div class="cfull-wrap">
+          <div class="cfull-msgs" id="CFM">
+            <div class="cm"><div class="cav cai"><i class="ti ti-message-dots" style="font-size:11px;color:var(--orange);"></i></div><div class="cb cba">Listo. Pregunta como quieras — fechas, rangos, hornos específicos, lo que sea.</div></div>
+          </div>
+          <div class="cinrow"><input type="text" id="CFI" placeholder="horno 3 ayer, del 10 al 15, semana pasada el 2..." onkeydown="if(event.key==='Enter')scF()"><button class="btn btnp" onclick="scF()"><i class="ti ti-send"></i></button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIGURACIÓN -->
+    <div id="v-cfg2" class="view">
+      <div class="pt">Configuración de hornos</div>
+      <div class="admbanner"><i class="ti ti-shield-lock" style="font-size:14px;"></i> Solo visible para administradores</div>
+      <div class="card">
+        <div class="ch"><div class="ct">Umbrales y parámetros</div><button class="btn btnp" style="font-size:12px;padding:5px 10px;" onclick="saveCfg(this)"><i class="ti ti-check"></i> Guardar cambios</button></div>
+        <div style="overflow-x:auto;"><table><thead><tr><th>Horno</th><th>ID</th><th>Umbral alto (°C)</th><th>Umbral bajo (°C)</th><th>Intervalo (min)</th></tr></thead><tbody id="cfgBody"><tr><td colspan="5" class="loading-row">Cargando...</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- NUEVO MEDIDOR -->
+    <div id="v-config" class="view">
+      <div class="pt">Nuevo medidor</div>
+      <div class="admbanner"><i class="ti ti-shield-lock" style="font-size:14px;"></i> Solo visible para administradores</div>
+      <div class="card">
+        <div class="ch"><div class="ct">Configurar medidor</div><div style="font-size:12px;color:var(--text2);">ID asignado: <strong id="nextID" style="color:var(--blue);">HRN-006</strong></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+          <div class="fg"><label class="fl">Nombre</label><input class="fi" id="cfg-nombre" placeholder="Horno 6"></div>
+          <div class="fg"><label class="fl">WiFi SSID</label><input class="fi" id="cfg-ssid" placeholder="NombreWifi"></div>
+          <div class="fg"><label class="fl">WiFi contraseña</label><input class="fi" id="cfg-pass" type="password" placeholder="••••••••"></div>
+          <div class="fg"><label class="fl">URL del servicio</label><input class="fi" id="cfg-url" value="https://script.google.com/macros/s/AKfycbzkAX1jTR5sT7kMpFhJ8z-Vzv7R3g39Y_oaEzsWKBg6H6a2BWacJhTBj_5gBIKIixdk/exec" readonly></div>
+        </div>
+        <button class="btn btnp" style="margin-bottom:14px;" onclick="genCode()"><i class="ti ti-code"></i> Generar código</button>
+        <div id="codeOut" style="display:none;">
+          <div class="ch" style="margin-bottom:8px;"><div class="ct">Código generado</div><button class="btn" onclick="copyCode()"><i class="ti ti-copy"></i> Copiar</button></div>
+          <div class="codebox" id="codeBox"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG USUARIOS -->
+    <div id="v-users" class="view">
+      <div class="pt">Log de usuarios</div>
+      <div class="admbanner"><i class="ti ti-shield-lock" style="font-size:14px;"></i> Vista exclusiva del administrador</div>
+      <div class="card">
+        <div class="ch"><div class="ct">Registro de accesos</div><button class="btn" onclick="exportLogCSV()" style="font-size:12px;padding:5px 10px;"><i class="ti ti-download"></i> CSV</button></div>
+        <div style="overflow-x:auto;"><table id="usersTable">
+          <thead><tr><th>Fecha / hora</th><th>Correo</th><th>IP</th><th>Resultado</th><th>Rol</th></tr></thead>
+          <tbody id="logBody"><tr><td colspan="5" class="loading-row">Cargando...</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FLOTANTE -->
+  <button class="float-btn" onclick="toggleChat()"><i class="ti ti-message-dots" style="font-size:20px;color:#fff;"></i></button>
+  <div class="cpanel" id="CP">
+    <div class="cp-head">
+      <div><div style="font-size:13px;font-weight:500;">Asistente GB-OMS</div><div style="font-size:10px;color:var(--text2);">Pregunta como quieras</div></div>
+      <button class="btn" style="padding:3px 7px;font-size:11px;" onclick="toggleChat()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="cp-msgs" id="FM">
+      <div class="cm"><div class="cav cai"><i class="ti ti-message-dots" style="font-size:11px;color:var(--orange);"></i></div><div class="cb cba">Hola. Pregunta lo que quieras sobre los hornos.</div></div>
+    </div>
+    <div class="cp-input">
+      <input type="text" id="FI" placeholder="horno 4 ayer, semana pasada..." onkeydown="if(event.key==='Enter')sf()">
+      <button class="btn btnp" style="padding:5px 10px;" onclick="sf()"><i class="ti ti-send"></i></button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIGURACIÓN
+// ═══════════════════════════════════════════════════════════════
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzkAX1jTR5sT7kMpFhJ8z-Vzv7R3g39Y_oaEzsWKBg6H6a2BWacJhTBj_5gBIKIixdk/exec';
+const HORNOS_IDS = ['HRN-001','HRN-002','HRN-003','HRN-004','HRN-005'];
+const COLORES    = ['#185FA5','#3B6D11','#854F0B','#A32D2D','#534AB7'];
+
+// ═══════════════════════════════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════════════════════════════
+let SESSION = { token: null, rol: null, nombre: null };
+let DATOS_CACHE = {};
+let CFG_CACHE   = [];
+let oChart, fChart, selectedHorno = 0;
+
+// ═══════════════════════════════════════════════════════════════
+// API
+// ═══════════════════════════════════════════════════════════════
+async function api(params) {
+  const r = await fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify(params)
+  });
+  return r.json();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const err   = document.getElementById('loginErr');
+  const btn   = document.getElementById('loginBtn');
+
+  err.style.display = 'none';
+  btn.innerHTML = '<div class="spinner"></div> Verificando...';
+  btn.disabled  = true;
+
+  try {
+    const res = await api({ accion: 'login', email, password: pass });
+    if (!res.ok) {
+      err.textContent    = res.error;
+      err.style.display  = 'block';
+      btn.innerHTML      = 'Ingresar <i class="ti ti-arrow-right"></i>';
+      btn.disabled       = false;
+      return;
+    }
+    SESSION = { token: res.token, rol: res.rol, nombre: res.nombre };
+    iniciarApp();
+  } catch(e) {
+    err.textContent   = 'Error de conexión. Intenta de nuevo.';
+    err.style.display = 'block';
+    btn.innerHTML     = 'Ingresar <i class="ti ti-arrow-right"></i>';
+    btn.disabled      = false;
+  }
+}
+
+function doLogout() {
+  SESSION = { token: null, rol: null, nombre: null };
+  DATOS_CACHE = {};
+  document.getElementById('APP').style.display = 'none';
+  document.getElementById('LS').style.display  = 'flex';
+  document.getElementById('loginEmail').value  = '';
+  document.getElementById('loginPass').value   = '';
+  document.getElementById('loginBtn').innerHTML = 'Ingresar <i class="ti ti-arrow-right"></i>';
+  document.getElementById('loginBtn').disabled  = false;
+}
+
+function iniciarApp() {
+  document.getElementById('LS').style.display  = 'none';
+  document.getElementById('APP').style.display = 'block';
+
+  const initials = SESSION.nombre.substring(0,2).toUpperCase();
+  document.getElementById('uAv').textContent  = initials;
+  document.getElementById('uLbl').textContent = SESSION.nombre;
+
+  if (SESSION.rol === 'admin') {
+    document.getElementById('admTop').style.display   = 'inline-block';
+    document.getElementById('n-users').style.display  = 'flex';
+    document.getElementById('n-config').style.display = 'flex';
+    document.getElementById('n-cfg2').style.display   = 'flex';
+  }
+
+  cargarDashboard();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════
+async function cargarDashboard() {
+  const promises = HORNOS_IDS.map(id =>
+    api({ accion: 'getDatos', token: SESSION.token, horno: id, filtro: 'semana' })
+  );
+  const resultados = await Promise.all(promises);
+
+  DATOS_CACHE = {};
+  HORNOS_IDS.forEach((id, i) => {
+    DATOS_CACHE[id] = resultados[i].ok ? resultados[i].datos : [];
+  });
+
+  renderDashGrid();
+  renderMetrics();
+  renderOverviewChart();
+}
+
+function renderMetrics() {
+  let temps = [], anomHoy = 0, online = 0, offNames = [];
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+
+  HORNOS_IDS.forEach((id, i) => {
+    const datos = DATOS_CACHE[id] || [];
+    if (datos.length) {
+      online++;
+      const ultima = parseFloat(datos[datos.length-1][1]);
+      if (!isNaN(ultima)) temps.push(ultima);
+      datos.forEach(r => {
+        if (new Date(r[0]) >= hoy && r[3] !== 'Normal') anomHoy++;
+      });
+    } else {
+      offNames.push('Horno ' + (i+1));
+    }
+  });
+
+  const avg = temps.length ? (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1) : '--';
+  document.getElementById('m-avg').textContent     = avg + '°C';
+  document.getElementById('m-online').textContent  = online + ' / ' + HORNOS_IDS.length;
+  document.getElementById('m-offname').textContent = offNames.length ? offNames.join(', ') + ' sin conexión' : 'Todos operativos';
+  document.getElementById('m-anom').textContent    = anomHoy;
+
+  const now = new Date();
+  document.getElementById('m-sync').textContent   = now.toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('m-syncago').textContent = 'hace un momento';
+  document.getElementById('statusGlobal').innerHTML = `<span class="sd son"></span>${online}/${HORNOS_IDS.length} operativos`;
+}
+
+function renderDashGrid() {
+  const grid = document.getElementById('dashGrid');
+  grid.innerHTML = HORNOS_IDS.map((id, i) => {
+    const datos  = DATOS_CACHE[id] || [];
+    const online = datos.length > 0;
+    const ultima = online ? datos[datos.length-1] : null;
+    const temp   = ultima ? parseFloat(ultima[1]).toFixed(1) : '--';
+    const cfg    = CFG_CACHE[i] || { umbral_alto: 27 };
+    const alto   = ultima && parseFloat(ultima[1]) > cfg.umbral_alto;
+    const st     = !online ? 'of' : alto ? 'wa' : 'on';
+    const stTxt  = !online ? 'Sin conexión' : alto ? 'Advertencia' : 'Operativo';
+    const stCls  = !online ? 'of' : alto ? 'wa' : 'on';
+    return `<div class="ftile ${selectedHorno===i?'sel':''}" onclick="gof(${i})">
+      <div class="fn">Horno ${i+1}</div>
+      <div class="fid">${id}</div>
+      <div class="ftemp">${temp}<span>°C</span></div>
+      <div style="margin-top:5px;"><span class="sd s${st}"></span><span class="sl ${stCls}">${stTxt}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function renderOverviewChart() {
+  if (oChart) oChart.destroy();
+  const c = document.getElementById('oc'); if (!c) return;
+
+  const datasets = HORNOS_IDS.map((id, i) => {
+    const datos = DATOS_CACHE[id] || [];
+    const pts   = datos.slice(-12).map(r => ({ x: r[0], y: parseFloat(r[1]) }));
+    return {
+      label: 'Horno ' + (i+1),
+      data: pts.map(p => p.y),
+      borderColor: COLORES[i],
+      tension: .3, pointRadius: 2, borderWidth: 1.5, fill: false
+    };
+  });
+
+  const labels = (DATOS_CACHE[HORNOS_IDS[0]] || []).slice(-12).map(r => r[0].substring(11,16));
+
+  oChart = new Chart(c, {
+    type: 'line',
+    data: { labels, datasets },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } } }
+  });
+
+  document.getElementById('chartLegend').innerHTML = HORNOS_IDS.map((id,i) =>
+    `<span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:${COLORES[i]};display:inline-block;"></span>Horno ${i+1}</span>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HORNOS DETALLE
+// ═══════════════════════════════════════════════════════════════
+function renderHornoTabs() {
+  document.getElementById('hornoTabs').innerHTML = HORNOS_IDS.map((id,i) =>
+    `<div id="ft${i}" class="ftile ${selectedHorno===i?'sel':''}" style="min-width:80px;cursor:pointer;" onclick="sft(${i})">
+      <div class="fn">Horno ${i+1}</div>
+      <div style="font-size:10px;color:var(--text3);">${id}</div>
+    </div>`
+  ).join('');
+}
+
+async function sft(i) {
+  selectedHorno = i;
+  renderHornoTabs();
+  renderDashGrid();
+
+  const id    = HORNOS_IDS[i];
+  const datos = DATOS_CACHE[id] || [];
+  const det   = document.getElementById('hornoDetail');
+
+  const ultima = datos.length ? datos[datos.length-1] : null;
+  const temp   = ultima ? parseFloat(ultima[1]).toFixed(1) + '°C — ' + ultima[0].substring(11,19) : 'Sin datos';
+  const online = datos.length > 0;
+  const cfg    = CFG_CACHE[i] || { umbral_alto: 27 };
+  const alto   = ultima && parseFloat(ultima[1]) > cfg.umbral_alto;
+  const st     = !online ? 'sof' : alto ? 'sw' : 'son';
+  const stTxt  = !online ? 'Sin conexión' : alto ? 'Advertencia' : 'Operativo';
+
+  const chartId = 'fc_' + i;
+
+  det.innerHTML = `
+    <div class="irow">
+      <div><div class="il">Nombre</div><div class="iv">Horno ${i+1}</div></div>
+      <div><div class="il">ID</div><div class="iv">${id}</div></div>
+      <div><div class="il">Estado</div><div class="iv"><span class="sd ${st}"></span>${stTxt}</div></div>
+      <div><div class="il">Última lectura</div><div class="iv">${temp}</div></div>
+      <div><div class="il">Lecturas totales</div><div class="iv">${datos.length}</div></div>
+      <div><div class="il">Umbral alto</div><div class="iv">${cfg.umbral_alto || '--'}°C</div></div>
+    </div>
+    <div style="position:relative;width:100%;height:155px;margin-bottom:14px;"><canvas id="${chartId}"></canvas></div>
+    <div class="ch" style="margin-bottom:8px;">
+      <div class="ct">Registro</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;">
+        <input placeholder="Buscar..." id="searchInput${i}" oninput="filtrarTabla(${i})" style="font-size:12px;padding:5px 8px;width:130px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg2);color:var(--text);">
+        <select id="filtroSelect${i}" onchange="cambiarFiltro(${i})" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg2);color:var(--text);">
+          <option value="">Todas</option>
+          <option value="anomalias">Solo anomalías</option>
+          <option value="hora">Última hora</option>
+          <option value="semana">Última semana</option>
+        </select>
+        <button class="btn" onclick="exportHornoCSV(${i})" style="font-size:12px;padding:5px 10px;"><i class="ti ti-download"></i> CSV</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto;"><table id="hornoTable${i}">
+      <thead><tr><th>Fecha / hora</th><th>Temp (°C)</th><th>Delta</th><th>Estado</th></tr></thead>
+      <tbody>${renderTablaRows(datos)}</tbody>
+    </table></div>`;
+
+  setTimeout(() => {
+    if (fChart) fChart.destroy();
+    const c = document.getElementById(chartId); if (!c) return;
+    const pts = datos.slice(-20);
+    fChart = new Chart(c, {
+      type: 'line',
+      data: { labels: pts.map(r=>r[0].substring(11,16)), datasets: [{ label:'Temp', data: pts.map(r=>parseFloat(r[1])), borderColor: COLORES[i], tension:.3, pointRadius:3, borderWidth:2, fill:false }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{ticks:{font:{size:10}}},x:{ticks:{font:{size:10}}}}}
+    });
+  }, 50);
+}
+
+function renderTablaRows(datos) {
+  if (!datos.length) return '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:16px;">Sin datos</td></tr>';
+  return [...datos].reverse().map(r => {
+    const est = r[3];
+    const cls = est==='Normal'?'bok':est==='Alto'?'bwn':'ber';
+    return `<tr><td>${r[0]}</td><td>${parseFloat(r[1]).toFixed(2)}</td><td>${parseFloat(r[2])>=0?'+':''}${parseFloat(r[2]).toFixed(2)}</td><td><span class="badge ${cls}">${est}</span></td></tr>`;
+  }).join('');
+}
+
+async function cambiarFiltro(i) {
+  const filtro = document.getElementById('filtroSelect'+i).value;
+  const id     = HORNOS_IDS[i];
+  const res    = await api({ accion:'getDatos', token:SESSION.token, horno:id, filtro });
+  if (res.ok) {
+    DATOS_CACHE[id] = res.datos;
+    document.querySelector(`#hornoTable${i} tbody`).innerHTML = renderTablaRows(res.datos);
+  }
+}
+
+function filtrarTabla(i) {
+  const q    = document.getElementById('searchInput'+i).value.toLowerCase();
+  const rows = document.querySelectorAll(`#hornoTable${i} tbody tr`);
+  rows.forEach(r => { r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none'; });
+}
+
+function exportHornoCSV(i) {
+  const id    = HORNOS_IDS[i];
+  const datos = DATOS_CACHE[id] || [];
+  const rows  = [['Fecha/hora','Temp(C)','Delta','Estado'], ...datos.map(r=>[r[0],r[1],r[2],r[3]])];
+  descargarCSV(rows, id + '_datos.csv');
+}
+
+function gof(i) { sv('hornos'); setTimeout(()=>sft(i), 50); }
+
+// ═══════════════════════════════════════════════════════════════
+// CONFIGURACIÓN
+// ═══════════════════════════════════════════════════════════════
+async function cargarConfig() {
+  const res = await Promise.all(HORNOS_IDS.map(id => api({ accion:'getConfig', horno:id })));
+  CFG_CACHE = res.map((r,i) => r.ok ? { horno_id: HORNOS_IDS[i], umbral_alto: r.umbral_alto, umbral_bajo: r.umbral_bajo, intervalo_min: r.intervalo } : { horno_id: HORNOS_IDS[i], umbral_alto:27, umbral_bajo:15, intervalo_min:5 });
+  document.getElementById('cfgBody').innerHTML = CFG_CACHE.map((d,i) => `
+    <tr>
+      <td>Horno ${i+1}</td><td>${d.horno_id}</td>
+      <td><input class="cfgtinput" type="number" value="${d.umbral_alto}" onchange="CFG_CACHE[${i}].umbral_alto=+this.value"></td>
+      <td><input class="cfgtinput" type="number" value="${d.umbral_bajo}" onchange="CFG_CACHE[${i}].umbral_bajo=+this.value"></td>
+      <td><input class="cfgtinput" type="number" value="${d.intervalo_min}" onchange="CFG_CACHE[${i}].intervalo_min=+this.value"></td>
+    </tr>`).join('');
+}
+
+async function saveCfg(btn) {
+  btn.disabled   = true;
+  btn.innerHTML  = '<div class="spinner"></div> Guardando...';
+  const res = await api({ accion:'setConfig', token:SESSION.token, configuraciones:CFG_CACHE });
+  btn.disabled  = false;
+  btn.innerHTML = res.ok ? '<i class="ti ti-check"></i> Guardado' : '<i class="ti ti-x"></i> Error';
+  setTimeout(() => { btn.innerHTML = '<i class="ti ti-check"></i> Guardar cambios'; }, 2000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOG
+// ═══════════════════════════════════════════════════════════════
+async function cargarLog() {
+  const res = await api({ accion:'getLog', token:SESSION.token });
+  if (!res.ok) return;
+  document.getElementById('logBody').innerHTML = [...res.datos].reverse().map(r => {
+    const ok = r[3]==='LOGIN_EXITOSO';
+    const cls = ok?'bok':r[3]==='BLOQUEADO_DOMINIO'?'ber':'bwn';
+    const rol = r[4]==='admin'?`<span class="badge badm">Admin</span>`:`<span class="badge bok">Operador</span>`;
+    return `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td><span class="badge ${cls}">${r[3]}</span></td><td>${r[4]?rol:'—'}</td></tr>`;
+  }).join('');
+}
+
+function exportLogCSV() {
+  const rows = [['Fecha/hora','Correo','IP','Resultado','Rol']];
+  document.querySelectorAll('#logBody tr').forEach(r => {
+    rows.push([...r.querySelectorAll('td')].map(td=>td.textContent));
+  });
+  descargarCSV(rows, 'login_log.csv');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ASISTENTE NLP
+// ═══════════════════════════════════════════════════════════════
+function norm(t){return t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[¿?¡!.,;:]/g,' ').replace(/\bq\b/g,'que').replace(/\binfo\b/g,'informacion').replace(/\btemp\b/g,'temperatura').replace(/\banomalias?\b|\balarmas?\b|\bpicos?\b|\bfallas?\b|\berrores?\b|\bproblemas?\b|\braro\b|\bextrano\b/g,'anomalia').replace(/\bcomo (esta|va|anda)\b/g,'estado').replace(/\bdame\b|\bmuestrame\b|\bver\b/g,'mostrar').replace(/\bmas caliente\b|\bmayor temp\b/g,'maximo').replace(/\bmas frio\b|\bmenor temp\b/g,'minimo').replace(/\boffline\b|\bdesconectado\b|\bsin senal\b/g,'sin conexion').replace(/\bresumen\b|\bgeneral\b|\btodo\b/g,'resumen').trim();}
+function detectHorno(t){const w={'uno':1,'dos':2,'tres':3,'cuatro':4,'cinco':5};let m;if(m=t.match(/horno\s*#?\s*([1-5])/))return+m[1];if(m=t.match(/\bel\s+([1-5])\b/))return+m[1];if(m=t.match(/\bh([1-5])\b/))return+m[1];if(m=t.match(/\b([1-5])\b/))return+m[1];for(const[k,v]of Object.entries(w))if(t.includes(k))return v;return null;}
+function detectPeriodo(raw,t){let m;if(m=raw.match(/del?\s+(\d{1,2})\s+al?\s+(\d{1,2})(?:\s+de\s+(\w+))?/i))return{tipo:'rango',label:`${m[1]}–${m[2]} ${m[3]||''}`};if(m=raw.match(/(ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)\w*\s+(\d{1,2})/i))return{tipo:'fecha',label:`${m[1]} ${m[2]}`};if(/\bayer\b/.test(t))return{tipo:'ayer'};if(m=t.match(/hace\s+(\d+)\s+dias?/))return{tipo:'hace_dias',label:`hace ${m[1]} días`};if(/semana pasada|semana anterior/.test(t))return{tipo:'semanaPasada'};if(/esta semana|la semana/.test(t))return{tipo:'semana'};if(/mes pasado|el mes anterior/.test(t))return{tipo:'mesPasado'};if(/fin de semana|finde/.test(t))return{tipo:'finde'};if(/\bhoy\b|\bahora\b/.test(t))return{tipo:'hoy'};return null;}
+function detectIntent(t){if(/sin conexion/.test(t))return'offline';if(/maximo/.test(t))return'max';if(/minimo/.test(t))return'min';if(/anomalia/.test(t))return'anomalias';if(/temperatura/.test(t))return'temp';if(/estado/.test(t))return'estado';if(/promedio|media/.test(t))return'promedio';if(/resumen|informacion/.test(t))return'resumen';if(/esta bien|todo bien|como.*van/.test(t))return'general';return null;}
+
+function calcResumen(id) {
+  const datos = DATOS_CACHE[id] || [];
+  if (!datos.length) return null;
+  const temps  = datos.map(r=>parseFloat(r[1])).filter(t=>!isNaN(t));
+  const anom   = datos.filter(r=>r[3]!=='Normal');
+  const maxT   = Math.max(...temps);
+  const maxRow = datos.find(r=>parseFloat(r[1])===maxT);
+  return { promedio:(temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1), maximo:maxT, minimo:Math.min(...temps), maxFecha:maxRow?maxRow[0].substring(0,16):'', anomalias:anom.length, total:datos.length };
+}
+
+function responder(raw) {
+  const t      = norm(raw);
+  const n      = detectHorno(t);
+  const p      = detectPeriodo(raw,t);
+  const intent = detectIntent(t);
+  const stL    = { online:'🟢 Operativo', warn:'🟡 Advertencia', offline:'🔴 Sin conexión' };
+
+  if (p) {
+    const hLabel = n ? `<strong>Horno ${n}</strong> — ` : '';
+    const id     = n ? HORNOS_IDS[n-1] : null;
+    const res    = id ? calcResumen(id) : null;
+    if (res) return `${hLabel}<strong>${p.label||p.tipo}</strong> — promedio <strong>${res.promedio}°C</strong>, pico <strong>${res.maximo}°C</strong> (${res.maxFecha}), anomalías: <strong>${res.anomalias}</strong>.`;
+    const todos = HORNOS_IDS.map((id,i) => { const r=calcResumen(id); return r?`Horno ${i+1}: ${r.promedio}°C (${r.anomalias} anom.)`:null; }).filter(Boolean);
+    return `<strong>${p.label||p.tipo}</strong>:<br>${todos.join('<br>')}`;
+  }
+
+  if (n) {
+    const id  = HORNOS_IDS[n-1];
+    const res = calcResumen(id);
+    if (!res) return `Horno ${n} no tiene datos disponibles.`;
+    if (intent==='temp')      return `Horno ${n}: última temperatura <strong>${res.maximo}°C</strong>.`;
+    if (intent==='anomalias') return `Horno ${n}: <strong>${res.anomalias} anomalía(s)</strong> registradas.`;
+    if (intent==='promedio')  return `Horno ${n}: promedio <strong>${res.promedio}°C</strong>.`;
+    return `<strong>Horno ${n} (${id})</strong><br>Promedio: <strong>${res.promedio}°C</strong><br>Máximo: <strong>${res.maximo}°C</strong> (${res.maxFecha})<br>Mínimo: <strong>${res.minimo}°C</strong><br>Anomalías: <strong>${res.anomalias}</strong><br>Lecturas: ${res.total}`;
+  }
+
+  if (intent==='offline') {
+    const offs = HORNOS_IDS.filter(id=>!(DATOS_CACHE[id]||[]).length);
+    return offs.length ? offs.map((id,i)=>`<strong>Horno ${HORNOS_IDS.indexOf(id)+1}</strong> sin datos.`).join('<br>') : 'Todos los hornos tienen datos. ✅';
+  }
+  if (intent==='max') {
+    const maxH = HORNOS_IDS.reduce((best,id) => { const r=calcResumen(id); if(!r)return best; return(!best||r.maximo>best.v)?{id,v:r.maximo,n:HORNOS_IDS.indexOf(id)+1}:best; }, null);
+    return maxH ? `El más caliente: <strong>Horno ${maxH.n}</strong> con <strong>${maxH.v}°C</strong>.` : 'Sin datos.';
+  }
+  if (intent==='general') {
+    const resumen = HORNOS_IDS.map((id,i)=>{ const r=calcResumen(id); return r?`Horno ${i+1}: ${r.promedio}°C`:'Horno '+(i+1)+': sin datos'; });
+    return '<strong>Estado general:</strong><br>' + resumen.join('<br>');
+  }
+  if (intent==='resumen') {
+    const todos = HORNOS_IDS.map((id,i)=>{ const r=calcResumen(id); return r?`Horno ${i+1}: ${r.promedio}°C, ${r.anomalias} anom.`:'Horno '+(i+1)+': sin datos'; });
+    return '<strong>Resumen:</strong><br>' + todos.join('<br>');
+  }
+  if (/^(hola|hey|buenas|ey|hi)/.test(t)) return '¡Hola! Pregunta lo que necesites sobre los hornos.';
+  if (/gracias|thanks/.test(t)) return 'De nada. ¿Algo más?';
+  return `No entendí. Ejemplos:<br><em>"horno 4 info", "ayer el 2", "semana pasada anomalías", "cual está más caliente"</em>`;
+}
+
+function rq(q,full=false){const mid=full?'CFM':'FM';const M=document.getElementById(mid);M.innerHTML+=`<div class="cm u"><div class="cav cui">Yo</div><div class="cb cbu">${q}</div></div>`;M.innerHTML+=`<div class="cm"><div class="cav cai"><i class="ti ti-message-dots" style="font-size:11px;color:var(--orange);"></i></div><div class="cb cba">${responder(q)}</div></div>`;M.scrollTop=M.scrollHeight;}
+function sf(){const i=document.getElementById('FI');const v=i.value.trim();if(!v)return;rq(v,false);i.value='';}
+function scF(){const i=document.getElementById('CFI');const v=i.value.trim();if(!v)return;rq(v,true);i.value='';}
+function toggleChat(){document.getElementById('CP').classList.toggle('open');}
+
+// ═══════════════════════════════════════════════════════════════
+// NUEVO MEDIDOR
+// ═══════════════════════════════════════════════════════════════
+function genCode(){
+  const ssid=document.getElementById('cfg-ssid').value||'TU_WIFI';
+  const pass=document.getElementById('cfg-pass').value||'TU_PASS';
+  const url=SCRIPT_URL;
+  const n=HORNOS_IDS.length+1;
+  const id=`HRN-00${n}`;
+  document.getElementById('nextID').textContent=id;
+  document.getElementById('codeBox').textContent=`#include <MAX6675.h>\n#include <WiFi.h>\n#include <HTTPClient.h>\n\n// Generado por GB-OMS\nconst char* SSID="${ssid}";\nconst char* PASSWORD="${pass}";\nconst char* URL="${url}";\nconst char* HORNO_ID="${id}";\n\n#define PIN_SCK 18\n#define PIN_CS 5\n#define PIN_SO 19\n\nMAX6675 termopar(PIN_SCK,PIN_CS,PIN_SO);\nunsigned long ultimoEnvio=0;\nfloat tempAnterior=0,umbralAlto=27.0,umbralBajo=15.0;\nunsigned long intervalo=5*60*1000UL;\n\nvoid setup(){\n  Serial.begin(115200);\n  WiFi.begin(SSID,PASSWORD);\n  while(WiFi.status()!=WL_CONNECTED){delay(500);}\n  leerConfig();\n}\n\nvoid leerConfig(){\n  HTTPClient http;\n  http.begin(URL);\n  http.addHeader("Content-Type","application/json");\n  String r=http.POST("{\\"accion\\":\\"getConfig\\",\\"horno\\":\\"${id}\\"}");\n  // parsear umbralAlto, umbralBajo, intervalo de la respuesta\n  http.end();\n}\n\nvoid loop(){\n  if(millis()-ultimoEnvio>=intervalo){\n    ultimoEnvio=millis();\n    float temp=termopar.readCelsius();\n    if(isnan(temp))return;\n    float delta=temp-tempAnterior;\n    tempAnterior=temp;\n    String estado="Normal";\n    if(temp>umbralAlto)estado="Alto";\n    if(temp<umbralBajo)estado="Bajo";\n    enviarDatos(temp,delta,estado);\n  }\n}\n\nvoid enviarDatos(float temp,float delta,String estado){\n  HTTPClient http;\n  http.begin(URL);\n  http.addHeader("Content-Type","application/json");\n  String j="{\\"accion\\":\\"registrarDato\\",\\"horno\\":\\"${id}\\",";\n  j+="\\"temperatura\\":"+String(temp,2)+",\\"delta\\":"+String(delta,2)+",\\"estado\\":\\""+estado+"\\"}";\n  http.POST(j);\n  http.end();\n}`;
+  document.getElementById('codeOut').style.display='block';
+}
+function copyCode(){navigator.clipboard.writeText(document.getElementById('codeBox').textContent).then(()=>{const b=document.querySelector('[onclick="copyCode()"]');b.innerHTML='<i class="ti ti-check"></i> Copiado';setTimeout(()=>{b.innerHTML='<i class="ti ti-copy"></i> Copiar';},2000);});}
+
+// ═══════════════════════════════════════════════════════════════
+// NAVEGACIÓN
+// ═══════════════════════════════════════════════════════════════
+function sv(n){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));
+  document.getElementById('v-'+n).classList.add('active');
+  const ni=document.getElementById('n-'+n);if(ni)ni.classList.add('active');
+  if(n==='hornos'){renderHornoTabs();setTimeout(()=>sft(selectedHorno),50);}
+  if(n==='cfg2')cargarConfig();
+  if(n==='users')cargarLog();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILIDADES
+// ═══════════════════════════════════════════════════════════════
+function descargarCSV(rows, fname){
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=fname;a.click();
+}
+
+// Auto-refresh cada 5 minutos
+setInterval(()=>{ if(SESSION.token) cargarDashboard(); }, 5*60*1000);
+</script>
+</body>
+</html>
